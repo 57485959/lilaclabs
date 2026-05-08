@@ -3,23 +3,25 @@
 @section('page-title','Pencatatan Pengeluaran')
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div style="color:#6c757d;font-size:13px">Catatan biaya & pengeluaran operasional</div>
+    <div style="color:#6c757d;font-size:13px">Catatan biaya operasional (Botol, Label, Segel, Madu)</div>
     <a href="{{ route('pengeluaran.create') }}" class="btn btn-madu">+ Catat Pengeluaran</a>
 </div>
 <div class="card">
     <div class="card-body p-0">
         <table class="table mb-0">
-            <thead><tr><th class="ps-3">Tanggal</th><th>Kategori</th><th>Keterangan</th><th>Jumlah</th><th>Dicatat Oleh</th><th>Aksi</th></tr></thead>
+            <thead>
+                <tr><th class="ps-3">Tanggal</th><th>Kategori</th><th>Keterangan</th><th>Jumlah</th><th>Dicatat Oleh</th><th>Aksi</th></tr>
+            </thead>
             <tbody>
                 @forelse($pengeluaran as $p)
                 <tr>
                     <td class="ps-3" style="font-size:13px">{{ $p->tanggal->format('d/m/Y') }}</td>
-                    <td><span class="badge badge-menipis" style="font-size:11px">{{ $p->kategori->nama_kategori }}</span></td>
+                    <td><span class="badge badge-menipis" style="font-size:11px">{{ $p->kategori }}</span></td>
                     <td style="font-size:13px">{{ $p->keterangan }}</td>
-                    <td style="font-size:13px;font-weight:600;color:#ef4444">Rp {{ number_format($p->jumlah,0,',','.') }}</td>
+                    <td style="font-size:13px;font-weight:600;color:#ef4444">Rp {{ number_format($p->jumlah_pengeluaran,0,',','.') }}</td>
                     <td style="font-size:12px;color:#6c757d">{{ $p->user->nama }}</td>
                     <td>
-                        <form action="{{ route('pengeluaran.destroy',$p->id) }}" method="POST" onsubmit="return confirm('Hapus data ini?')">
+                        <form action="{{ route('pengeluaran.destroy', $p->id_pengeluaran) }}" method="POST" onsubmit="return confirm('Hapus data ini?')">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger" style="font-size:11px">Hapus</button>
                         </form>

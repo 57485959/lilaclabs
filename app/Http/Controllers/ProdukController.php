@@ -21,15 +21,17 @@ class ProdukController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_produk'  => 'required|string|max:150',
-            'satuan'       => 'required|string|max:20',
-            'harga_jual'   => 'required|numeric|min:0',
-            'harga_beli'   => 'required|numeric|min:0',
-            'stok_minimum' => 'required|integer|min:0',
+            'nama_produk'   => 'required|string|max:100',
+            'jenis_asal'    => 'required|in:Supplier,Ternak',
+            'ukuran_kemasan'=> 'required|string|max:50',
+            'harga_jual'    => 'required|numeric|min:0',
+            'harga_modal'   => 'required|numeric|min:0',
+            'minimum_stok'  => 'required|integer|min:0',
         ]);
 
-        Produk::create($request->all());
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan.');
+        Produk::create(array_merge($request->all(), ['stok' => 0]));
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil ditambahkan.');
     }
 
     public function edit(Produk $produk)
@@ -40,20 +42,23 @@ class ProdukController extends Controller
     public function update(Request $request, Produk $produk)
     {
         $request->validate([
-            'nama_produk'  => 'required|string|max:150',
-            'satuan'       => 'required|string|max:20',
-            'harga_jual'   => 'required|numeric|min:0',
-            'harga_beli'   => 'required|numeric|min:0',
-            'stok_minimum' => 'required|integer|min:0',
+            'nama_produk'   => 'required|string|max:100',
+            'jenis_asal'    => 'required|in:Supplier,Ternak',
+            'ukuran_kemasan'=> 'required|string|max:50',
+            'harga_jual'    => 'required|numeric|min:0',
+            'harga_modal'   => 'required|numeric|min:0',
+            'minimum_stok'  => 'required|integer|min:0',
         ]);
 
         $produk->update($request->all());
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil diperbarui.');
     }
 
     public function destroy(Produk $produk)
     {
-        $produk->update(['status' => 'nonaktif']);
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil dinonaktifkan.');
+        $produk->delete();
+        return redirect()->route('produk.index')
+            ->with('success', 'Produk berhasil dihapus.');
     }
 }

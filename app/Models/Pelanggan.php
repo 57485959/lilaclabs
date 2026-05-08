@@ -6,14 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pelanggan extends Model
 {
-    protected $table = 'pelanggan';
+    protected $table      = 'pelanggan';
+    protected $primaryKey = 'id_pelanggan';
+    public    $timestamps = false;
 
-    protected $fillable = [
-        'nama', 'nomor_hp', 'alamat', 'total_pembelian',
-    ];
+    const CREATED_AT = 'create_at';
+    const UPDATED_AT = null;
 
-    public function penjualan()
+    protected $fillable = ['nama_pelanggan', 'no_hp', 'alamat'];
+
+    public function transaksi()
     {
-        return $this->hasMany(Penjualan::class, 'pelanggan_id');
+        return $this->hasMany(Transaksi::class, 'id_pelanggan', 'id_pelanggan');
     }
 }

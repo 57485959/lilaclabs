@@ -4,26 +4,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Pengeluaran extends Model
+class PembelianStok extends Model
 {
-    protected $table      = 'pengeluaran';
-    protected $primaryKey = 'id_pengeluaran';
+    protected $table      = 'pembelian_stok';
+    protected $primaryKey = 'id_pembelian';
     public    $timestamps = false;
 
     const CREATED_AT = 'create_at';
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'id_user', 'tanggal', 'kategori',
-        'keterangan', 'jumlah_pengeluaran',
+        'id_produk', 'id_user', 'tanggal', 'supplier',
+        'jumlah', 'harga_beli', 'total', 'keterangan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
     ];
 
-    // Kategori enum yang tersedia
-    public static array $kategoriList = ['Botol', 'Label', 'Segel', 'Madu'];
+    public function produk()
+    {
+        return $this->belongsTo(Produk::class, 'id_produk', 'id_produk');
+    }
 
     public function user()
     {

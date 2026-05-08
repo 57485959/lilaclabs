@@ -14,11 +14,11 @@
         .login-logo p { color: #6c757d; font-size: 13px; margin: 0; }
         .form-label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px; }
         .form-control { border-radius: 10px; border: 1.5px solid #e5e7eb; padding: 10px 14px; font-size: 14px; transition: border .2s; }
-        .form-control:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); }
-        .btn-login { background: #f59e0b; color: #fff; border: none; border-radius: 10px; padding: 12px; font-weight: 600; font-size: 15px; width: 100%; transition: background .2s; }
+        .form-control:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.15); outline: none; }
+        .btn-login { background: #f59e0b; color: #fff; border: none; border-radius: 10px; padding: 12px; font-weight: 600; font-size: 15px; width: 100%; cursor: pointer; transition: background .2s; }
         .btn-login:hover { background: #d97706; }
-        .alert-danger { background: #fee2e2; border: none; color: #991b1b; border-radius: 10px; font-size: 13px; }
-        .divider { text-align: center; color: #9ca3af; font-size: 12px; margin: 20px 0 0; }
+        .alert-danger { background: #fee2e2; border: none; color: #991b1b; border-radius: 10px; font-size: 13px; padding: 10px 14px; margin-bottom: 16px; }
+        .divider { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -30,21 +30,21 @@
     </div>
 
     @if($errors->any())
-        <div class="alert alert-danger mb-3">
-            {{ $errors->first() }}
-        </div>
+        <div class="alert-danger">{{ $errors->first() }}</div>
     @endif
 
     <form action="{{ route('login.post') }}" method="POST">
         @csrf
         <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" placeholder="contoh@email.com"
-                   value="{{ old('email') }}" required autofocus>
+            <label class="form-label">Username</label>
+            <input type="text" name="username" class="form-control"
+                   placeholder="Masukkan username"
+                   value="{{ old('username') }}" required autofocus>
         </div>
         <div class="mb-4">
             <label class="form-label">Password</label>
-            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            <input type="password" name="password" class="form-control"
+                   placeholder="••••••••" required>
         </div>
         <button type="submit" class="btn-login">Masuk ke Sistem</button>
     </form>

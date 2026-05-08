@@ -13,7 +13,7 @@
         .sidebar-brand h5 { color: #fff; font-weight: 700; margin: 0; font-size: 18px; letter-spacing: 1px; }
         .sidebar-brand small { color: rgba(255,255,255,.8); font-size: 11px; }
         .nav-section { padding: 12px 16px 4px; font-size: 10px; font-weight: 600; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: 1px; }
-        .sidebar .nav-link { color: rgba(255,255,255,.65); padding: 9px 20px; border-radius: 0; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: all .2s; }
+        .sidebar .nav-link { color: rgba(255,255,255,.65); padding: 9px 20px; display: flex; align-items: center; gap: 10px; font-size: 14px; transition: all .2s; text-decoration: none; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { background: rgba(245,158,11,.15); color: var(--madu); border-right: 3px solid var(--madu); }
         .sidebar .nav-link i { width: 18px; text-align: center; }
         .main-content { margin-left: 240px; padding: 24px; min-height: 100vh; }
@@ -34,12 +34,9 @@
         .table th { font-size: 12px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: .5px; border-top: none; }
         .alert-success { background: #d1fae5; border: none; color: #065f46; border-radius: 10px; }
         .alert-danger  { background: #fee2e2; border: none; color: #991b1b; border-radius: 10px; }
-        @media(max-width:768px) { .sidebar { width: 100%; min-height: auto; position: relative; } .main-content { margin-left: 0; } }
     </style>
 </head>
 <body>
-
-{{-- Sidebar --}}
 <div class="sidebar">
     <div class="sidebar-brand">
         <h5>🍯 DADI MADU</h5>
@@ -52,11 +49,11 @@
         </a>
 
         <div class="nav-section">Pencatatan</div>
-        <a href="{{ route('stok.index') }}" class="nav-link {{ request()->routeIs('stok.*') ? 'active' : '' }}">
-            <i>📦</i> Stok Masuk
+        <a href="{{ route('pembelian.index') }}" class="nav-link {{ request()->routeIs('pembelian.*') ? 'active' : '' }}">
+            <i>📦</i> Pembelian Stok
         </a>
-        <a href="{{ route('penjualan.index') }}" class="nav-link {{ request()->routeIs('penjualan.*') ? 'active' : '' }}">
-            <i>🧾</i> Penjualan
+        <a href="{{ route('transaksi.index') }}" class="nav-link {{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+            <i>🧾</i> Transaksi Penjualan
         </a>
         <a href="{{ route('pengeluaran.index') }}" class="nav-link {{ request()->routeIs('pengeluaran.*') ? 'active' : '' }}">
             <i>💸</i> Pengeluaran
@@ -81,7 +78,8 @@
         <div class="mt-4 px-3">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-sm w-100" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.15);">
+                <button type="submit" class="btn btn-sm w-100"
+                    style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.15);">
                     🚪 Keluar
                 </button>
             </form>
@@ -93,13 +91,10 @@
     </nav>
 </div>
 
-{{-- Main Content --}}
 <div class="main-content">
     <div class="topbar">
-        <h1 class="page-title">@yield('page-title', 'Dashboard')</h1>
-        <div style="font-size:13px;color:#6c757d;">
-            📅 {{ now()->isoFormat('dddd, D MMMM Y') }}
-        </div>
+        <h1 class="page-title">@yield('page-title','Dashboard')</h1>
+        <div style="font-size:13px;color:#6c757d;">📅 {{ now()->isoFormat('dddd, D MMMM Y') }}</div>
     </div>
 
     @if(session('success'))
@@ -111,6 +106,5 @@
 
     @yield('content')
 </div>
-
 </body>
 </html>

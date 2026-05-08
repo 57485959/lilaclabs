@@ -6,27 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class Produk extends Model
 {
-    protected $table = 'produk';
+    protected $table      = 'produk';
+    protected $primaryKey = 'id_produk';
+    public    $timestamps = false;
 
     protected $fillable = [
-        'nama_produk', 'satuan', 'harga_jual', 'harga_beli',
-        'stok', 'stok_minimum', 'deskripsi', 'status',
+        'nama_produk', 'jenis_asal', 'ukuran_kemasan',
+        'harga_jual', 'harga_modal', 'stok', 'minimum_stok',
     ];
 
-    public function stokMasuk()
+    public function pembelianStok()
     {
-        return $this->hasMany(StokMasuk::class, 'produk_id');
+        return $this->hasMany(PembelianStok::class, 'id_produk', 'id_produk');
     }
 
-    public function detailPenjualan()
+    public function detailTransaksi()
     {
-        return $this->hasMany(DetailPenjualan::class, 'produk_id');
+        return $this->hasMany(DetailTransaksi::class, 'id_produk', 'id_produk');
     }
 
     public function getStatusStokAttribute(): string
     {
         if ($this->stok == 0) return 'habis';
-        if ($this->stok <= $this->stok_minimum) return 'menipis';
+        if ($this->stok <= $this->minimum_stok) return 'menipis';
         return 'aman';
     }
 }
