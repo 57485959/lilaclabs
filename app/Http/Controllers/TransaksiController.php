@@ -6,8 +6,10 @@ use App\Models\Transaksi;
 use App\Models\DetailTransaksi;
 use App\Models\Pelanggan;
 use App\Models\Produk;
+use App\Models\Pengaturan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TransaksiController extends Controller
 {
@@ -38,43 +40,41 @@ class TransaksiController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            // Buat atau ambil pelanggan
             $pelangganId = null;
             if ($request->nama_pelanggan) {
-                $pelanggan = Pelanggan::firstOrCreate(
+                $pelanggan   = Pelanggan::firstOrCreate(
                     ['nama_pelanggan' => $request->nama_pelanggan],
-                    ['no_hp' => $request->no_hp ?? null]
+                    ['no_hp'          => $request->no_hp ?? null]
                 );
                 $pelangganId = $pelanggan->id_pelanggan;
             }
 
-            // Hitung subtotal dari semua item
             $subtotal = 0;
             $items    = [];
 
             foreach ($request->produk_id as $i => $produkId) {
-                $produk  = Produk::findOrFail($produkId);
-                $qty     = $request->qty[$i];
-                $sub     = $produk->harga_jual * $qty;
+                $produk   = Produk::findOrFail($produkId);
+                $qty      = $request->qty[$i];
+                $sub      = $produk->harga_jual * $qty;
                 $subtotal += $sub;
 
                 $items[] = [
-                    'id_produk'           => $produkId,
-                    'qty'                 => $qty,
-                    'harga_saat_transaksi'=> $produk->harga_jual,
-                    'subtotal'            => $sub,
+                    'id_produk'            => $produkId,
+                    'qty'                  => $qty,
+                    'harga_saat_transaksi' => $produk->harga_jual,
+                    'subtotal'             => $sub,
                 ];
 
-                // Kurangi stok
                 $produk->decrement('stok', $qty);
             }
 
-            $ongkir    = $request->ongkir ?? 0;
+            $ongkir     = $request->ongkir ?? 0;
             $grandtotal = $subtotal + $ongkir;
 
-            // Simpan transaksi — id_transaksi di-generate trigger MySQL
-            $transaksi = Transaksi::create([
-                'id_transaksi'      => '', // akan diganti trigger
+            $idTransaksi = 'TRX-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
+
+            Transaksi::create([
+                'id_transaksi'      => $idTransaksi,
                 'id_pelanggan'      => $pelangganId,
                 'id_user'           => auth()->user()->id_user,
                 'tanggal_transaksi' => $request->tanggal_transaksi,
@@ -85,17 +85,9 @@ class TransaksiController extends Controller
                 'grandtotal'        => $grandtotal,
             ]);
 
-            // Ambil id_transaksi yang baru dibuat oleh trigger
-            $idTransaksi = DB::table('transaksi')
-                ->where('id_user', auth()->user()->id_user)
-                ->orderBy('create_at', 'desc')
-                ->value('id_transaksi');
-
-            // Simpan detail
             foreach ($items as $item) {
                 DetailTransaksi::create(array_merge(
-                    $item,
-                    ['id_transaksi' => $idTransaksi]
+                    $item, ['id_transaksi' => $idTransaksi]
                 ));
             }
         });
@@ -109,5 +101,14 @@ class TransaksiController extends Controller
         $transaksi = Transaksi::with(['pelanggan', 'user', 'detail.produk'])
             ->findOrFail($id);
         return view('transaksi.show', compact('transaksi'));
+    }
+
+    // Halaman cetak struk
+    public function cetak($id)
+    {
+        $transaksi  = Transaksi::with(['pelanggan', 'user', 'detail.produk'])
+            ->findOrFail($id);
+        $pengaturan = Pengaturan::first();
+        return view('transaksi.cetak', compact('transaksi', 'pengaturan'));
     }
 }

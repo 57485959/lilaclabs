@@ -1,60 +1,63 @@
 @extends('layouts.app')
 @section('title','Laporan Penjualan')
-@section('page-title','Laporan Penjualan')
+@section('page-title','Laporan')
 @section('content')
-<div class="d-flex align-items-center gap-3 mb-4">
-    <form method="GET" class="d-flex gap-2 align-items-center">
-        <label class="fw-semibold" style="font-size:13px;white-space:nowrap">Pilih Bulan:</label>
-        <input type="month" name="bulan" class="form-control" value="{{ $bulan }}" style="width:180px">
-        <button type="submit" class="btn btn-madu">Tampilkan</button>
+
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <a href="{{ route('laporan.index') }}" style="font-size:20px;color:#3d2b1a;text-decoration:none">←</a>
+    <h2 style="font-size:18px;font-weight:700;color:#3d2b1a">Laporan Transaksi</h2>
+</div>
+
+<div class="card">
+    <form method="GET" style="display:flex;gap:10px;align-items:flex-end">
+        <div style="flex:1">
+            <label class="form-label">Pilih Bulan</label>
+            <input type="month" name="bulan" class="form-control" value="{{ $bulan }}">
+        </div>
+        <button type="submit" class="btn btn-amber">Tampilkan</button>
     </form>
 </div>
-<div class="row g-3">
-<div class="col-md-5">
-<div class="card mb-3">
-    <div class="card-header">🏆 Produk Terlaris Bulan Ini</div>
-    <div class="card-body p-0">
-        <table class="table mb-0" style="font-size:12px">
-            <thead><tr><th class="ps-3">#</th><th>Produk</th><th>Terjual</th><th>Pendapatan</th></tr></thead>
-            <tbody>
-                @forelse($produkTerlaris as $i => $p)
-                <tr>
-                    <td class="ps-3 fw-bold" style="color:#f59e0b">{{ $i+1 }}</td>
-                    <td>{{ $p->nama_produk }}</td>
-                    <td><strong>{{ $p->total_terjual }}</strong></td>
-                    <td>Rp {{ number_format($p->total_pendapatan,0,',','.') }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="4" class="text-center text-muted py-3">Belum ada data</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+
+{{-- Produk Terlaris --}}
+@if($produkTerlaris->count())
+<p class="section-title">🏆 Produk Terlaris</p>
+@foreach($produkTerlaris as $i => $p)
+<div style="background:#fff;border-radius:12px;padding:12px 14px;border:1px solid #e8ddd5;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+    <div style="width:28px;height:28px;border-radius:50%;background:#fef3c7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#d97706;flex-shrink:0">
+        {{ $i+1 }}
+    </div>
+    <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:#3d2b1a">{{ $p->nama_produk }}</div>
+        <div style="font-size:11px;color:#7a6152">{{ $p->ukuran_kemasan }}</div>
+    </div>
+    <div style="text-align:right">
+        <div style="font-size:14px;font-weight:700;color:#d97706">{{ $p->total_terjual }} terjual</div>
+        <div style="font-size:11px;color:#7a6152">Rp {{ number_format($p->total_pendapatan,0,',','.') }}</div>
     </div>
 </div>
-</div>
-<div class="col-md-7">
-<div class="card">
-    <div class="card-header">🧾 Semua Transaksi Bulan Ini</div>
-    <div class="card-body p-0">
-        <table class="table mb-0" style="font-size:12px">
-            <thead><tr><th class="ps-3">No. Invoice</th><th>Tanggal</th><th>Pelanggan</th><th>Grandtotal</th><th>Metode</th><th>Status</th></tr></thead>
-            <tbody>
-                @forelse($transaksi as $t)
-                <tr>
-                    <td class="ps-3" style="font-family:monospace">{{ $t->id_transaksi }}</td>
-                    <td>{{ $t->tanggal_transaksi->format('d/m') }}</td>
-                    <td>{{ $t->pelanggan?->nama_pelanggan ?? 'Umum' }}</td>
-                    <td class="fw-semibold" style="color:#d97706">Rp {{ number_format($t->grandtotal,0,',','.') }}</td>
-                    <td>{{ $t->metode_bayar }}</td>
-                    <td><span class="badge {{ $t->status_bayar=='Lunas'?'badge-aman':'badge-menipis' }}" style="font-size:10px">{{ $t->status_bayar }}</span></td>
-                </tr>
-                @empty
-                <tr><td colspan="6" class="text-center text-muted py-3">Belum ada transaksi</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+@endforeach
+@endif
+
+{{-- Daftar Transaksi --}}
+<p class="section-title">🧾 Semua Transaksi</p>
+@forelse($transaksi as $t)
+<div class="trx-card">
+    <div class="trx-row">
+        <div>
+            <div style="font-family:monospace;font-size:12px;font-weight:700;color:#5c3d1e">{{ $t->id_transaksi }}</div>
+            <div style="font-size:12px;color:#7a6152;margin-top:3px">
+                👤 {{ $t->pelanggan?->nama_pelanggan ?? 'Umum' }} •
+                📅 {{ $t->tanggal_transaksi?->format('d M Y') }}
+            </div>
+        </div>
+        <div style="text-align:right">
+            <div style="font-size:14px;font-weight:700;color:#d97706">Rp {{ number_format($t->grandtotal,0,',','.') }}</div>
+            <span class="badge {{ $t->status_bayar=='Lunas'?'badge-green':'badge-amber' }}" style="font-size:10px">{{ $t->status_bayar }}</span>
+        </div>
     </div>
 </div>
-</div>
-</div>
+@empty
+<div style="text-align:center;padding:30px 0;color:#9b8878;font-size:13px">Belum ada transaksi</div>
+@endforelse
+
 @endsection

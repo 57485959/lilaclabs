@@ -11,6 +11,30 @@ use Illuminate\Support\Facades\DB;
 
 class LaporanController extends Controller
 {
+    // Halaman utama laporan
+    public function index(Request $request)
+    {
+        $bulan = $request->bulan ?? now()->format('Y-m');
+        [$tahun, $bln] = explode('-', $bulan);
+
+        $pendapatan = Transaksi::whereMonth('tanggal_transaksi', $bln)
+            ->whereYear('tanggal_transaksi', $tahun)
+            ->where('status_bayar', 'Lunas')->sum('grandtotal');
+
+        $modal = PembelianStok::whereMonth('tanggal', $bln)
+            ->whereYear('tanggal', $tahun)->sum('total');
+
+        $totalPengeluaran = Pengeluaran::whereMonth('tanggal', $bln)
+            ->whereYear('tanggal', $tahun)->sum('jumlah_pengeluaran');
+
+        $labaBersih = $pendapatan - $modal - $totalPengeluaran;
+
+        return view('laporan.index', compact(
+            'bulan', 'pendapatan', 'modal',
+            'totalPengeluaran', 'labaBersih'
+        ));
+    }
+
     public function labaRugi(Request $request)
     {
         $bulan = $request->bulan ?? now()->format('Y-m');
@@ -18,37 +42,30 @@ class LaporanController extends Controller
 
         $pendapatan = Transaksi::whereMonth('tanggal_transaksi', $bln)
             ->whereYear('tanggal_transaksi', $tahun)
-            ->where('status_bayar', 'Lunas')
-            ->sum('grandtotal');
+            ->where('status_bayar', 'Lunas')->sum('grandtotal');
 
         $modal = PembelianStok::whereMonth('tanggal', $bln)
-            ->whereYear('tanggal', $tahun)
-            ->sum('total');
+            ->whereYear('tanggal', $tahun)->sum('total');
 
-        $totalPengeluaran = Pengeluaran::whereMonth('tanggal', $bln)
-            ->whereYear('tanggal', $tahun)
-            ->sum('jumlah_pengeluaran');
+        $pengeluaran = Pengeluaran::whereMonth('tanggal', $bln)
+            ->whereYear('tanggal', $tahun)->sum('jumlah_pengeluaran');
 
         $labaKotor  = $pendapatan - $modal;
-        $labaBersih = $labaKotor - $totalPengeluaran;
+        $labaBersih = $labaKotor - $pengeluaran;
 
-        // Rincian pengeluaran per kategori
         $rincianPengeluaran = Pengeluaran::whereMonth('tanggal', $bln)
             ->whereYear('tanggal', $tahun)
             ->selectRaw('kategori, SUM(jumlah_pengeluaran) as total')
-            ->groupBy('kategori')
-            ->get();
+            ->groupBy('kategori')->get();
 
-        // Daftar transaksi bulan ini
         $transaksi = Transaksi::with('pelanggan')
             ->whereMonth('tanggal_transaksi', $bln)
             ->whereYear('tanggal_transaksi', $tahun)
-            ->orderBy('tanggal_transaksi')
-            ->get();
+            ->orderBy('tanggal_transaksi')->get();
 
         return view('laporan.laba-rugi', compact(
-            'bulan', 'pendapatan', 'modal', 'totalPengeluaran',
-            'labaKotor', 'labaBersih', 'rincianPengeluaran', 'transaksi'
+            'bulan', 'pendapatan', 'modal', 'labaKotor',
+            'pengeluaran', 'labaBersih', 'rincianPengeluaran', 'transaksi'
         ));
     }
 
@@ -61,8 +78,7 @@ class LaporanController extends Controller
         ")->orderBy('nama_produk')->get();
 
         $riwayatPembelian = PembelianStok::with(['produk', 'user'])
-            ->orderBy('tanggal', 'desc')
-            ->take(20)->get();
+            ->orderBy('tanggal', 'desc')->take(20)->get();
 
         return view('laporan.stok', compact('produk', 'riwayatPembelian'));
     }
@@ -75,18 +91,16 @@ class LaporanController extends Controller
         $transaksi = Transaksi::with(['pelanggan', 'detail.produk'])
             ->whereMonth('tanggal_transaksi', $bln)
             ->whereYear('tanggal_transaksi', $tahun)
-            ->orderBy('tanggal_transaksi', 'desc')
-            ->get();
+            ->orderBy('tanggal_transaksi', 'desc')->get();
 
         $produkTerlaris = DB::table('detail_transaksi as dt')
             ->join('produk as p', 'p.id_produk', '=', 'dt.id_produk')
             ->join('transaksi as t', 't.id_transaksi', '=', 'dt.id_transaksi')
             ->whereMonth('t.tanggal_transaksi', $bln)
             ->whereYear('t.tanggal_transaksi', $tahun)
-            ->selectRaw('p.nama_produk, SUM(dt.qty) as total_terjual, SUM(dt.subtotal) as total_pendapatan')
-            ->groupBy('p.id_produk', 'p.nama_produk')
-            ->orderBy('total_terjual', 'desc')
-            ->get();
+            ->selectRaw('p.nama_produk, p.ukuran_kemasan, SUM(dt.qty) as total_terjual, SUM(dt.subtotal) as total_pendapatan')
+            ->groupBy('p.id_produk', 'p.nama_produk', 'p.ukuran_kemasan')
+            ->orderBy('total_terjual', 'desc')->get();
 
         return view('laporan.penjualan', compact('bulan', 'transaksi', 'produkTerlaris'));
     }

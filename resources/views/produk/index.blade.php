@@ -1,41 +1,59 @@
 @extends('layouts.app')
-@section('title','Master Produk')
-@section('page-title','Master Produk')
+@section('title','Produk')
+@section('page-title','Produk')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div style="color:#6c757d;font-size:13px">Daftar semua produk madu</div>
-    <a href="{{ route('produk.create') }}" class="btn btn-madu">+ Tambah Produk</a>
+
+<div class="page-header">
+    <h2>Produk</h2>
+    <p>Kelola data produk madu Anda</p>
 </div>
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table mb-0">
-            <thead>
-                <tr><th class="ps-3">Nama Produk</th><th>Jenis Asal</th><th>Kemasan</th><th>Harga Jual</th><th>Harga Modal</th><th>Stok</th><th>Min. Stok</th><th>Status Stok</th><th>Aksi</th></tr>
-            </thead>
-            <tbody>
-                @forelse($produk as $p)
-                <tr>
-                    <td class="ps-3" style="font-size:13px;font-weight:500">{{ $p->nama_produk }}</td>
-                    <td><span class="badge {{ $p->jenis_asal=='Ternak'?'badge-aman':'badge-menipis' }}" style="font-size:11px">{{ $p->jenis_asal }}</span></td>
-                    <td style="font-size:13px">{{ $p->ukuran_kemasan }}</td>
-                    <td style="font-size:13px;font-weight:600;color:#d97706">Rp {{ number_format($p->harga_jual,0,',','.') }}</td>
-                    <td style="font-size:13px;color:#6c757d">Rp {{ number_format($p->harga_modal,0,',','.') }}</td>
-                    <td style="font-size:13px;font-weight:700">{{ number_format($p->stok) }}</td>
-                    <td style="font-size:12px;color:#6c757d">{{ $p->minimum_stok }}</td>
-                    <td><span class="badge badge-{{ $p->status_stok }}" style="font-size:11px">{{ ucfirst($p->status_stok) }}</span></td>
-                    <td>
-                        <a href="{{ route('produk.edit', $p->id_produk) }}" class="btn btn-sm btn-outline-warning" style="font-size:11px">Edit</a>
-                        <form action="{{ route('produk.destroy', $p->id_produk) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus produk ini?')">
-                            @csrf @method('DELETE')
-                            <button class="btn btn-sm btn-outline-danger" style="font-size:11px">Hapus</button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="9" class="text-center text-muted py-4">Belum ada produk</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+
+<div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Cari produk..." id="searchInput" onkeyup="filterProduk()">
+</div>
+
+@forelse($produk as $p)
+<div class="produk-card searchable" data-search="{{ strtolower($p->nama_produk) }}">
+    <div class="produk-img">🍯</div>
+    <div class="produk-info" style="flex:1">
+        <h4>{{ $p->nama_produk }}</h4>
+        <div class="produk-meta">
+            Jenis: {{ $p->jenis_asal }} • {{ $p->ukuran_kemasan }}
+        </div>
+        <div class="produk-meta" style="margin-top:3px">
+            Harga Jual: <strong>Rp {{ number_format($p->harga_jual,0,',','.') }}</strong>
+        </div>
+        <div class="produk-meta">
+            Harga Modal: Rp {{ number_format($p->harga_modal,0,',','.') }}
+        </div>
+        <div class="produk-meta" style="margin-top:4px">
+            Stok: <span class="badge badge-{{ $p->status_stok=='aman'?'green':($p->status_stok=='menipis'?'amber':'red') }}">{{ $p->stok }}</span>
+        </div>
+    </div>
+    <div class="produk-actions" style="flex-direction:column">
+        <a href="{{ route('produk.edit', $p->id_produk) }}" class="btn btn-outline" style="font-size:11px;padding:5px 10px;margin-bottom:5px">✏️</a>
+        <form action="{{ route('produk.destroy', $p->id_produk) }}" method="POST" onsubmit="return confirm('Hapus produk ini?')">
+            @csrf @method('DELETE')
+            <button class="btn btn-danger" style="font-size:11px;padding:5px 10px">🗑️</button>
+        </form>
     </div>
 </div>
+@empty
+<div style="text-align:center;padding:40px 0;color:#9b8878">
+    <div style="font-size:40px;margin-bottom:8px">🍶</div>
+    <p>Belum ada produk</p>
+</div>
+@endforelse
+
+<button class="fab" onclick="window.location='{{ route('produk.create') }}'">+</button>
+
+<script>
+function filterProduk() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('.searchable').forEach(el => {
+        el.style.display = el.dataset.search.includes(q) ? '' : 'none';
+    });
+}
+</script>
 @endsection

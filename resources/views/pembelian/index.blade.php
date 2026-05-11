@@ -1,37 +1,46 @@
 @extends('layouts.app')
 @section('title','Pembelian Stok')
-@section('page-title','Pencatatan Pembelian Stok')
+@section('page-title','Pembelian Stok')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div style="color:#6c757d;font-size:13px">Riwayat pembelian stok dari supplier</div>
-    <a href="{{ route('pembelian.create') }}" class="btn btn-madu">+ Catat Pembelian</a>
+
+<div class="page-header">
+    <h2>Pembelian Stok</h2>
+    <p>Riwayat pembelian stok dari supplier</p>
 </div>
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table mb-0">
-            <thead>
-                <tr><th class="ps-3">Tanggal</th><th>Produk</th><th>Supplier</th><th>Jumlah</th><th>Harga Beli/Unit</th><th>Total</th><th>Keterangan</th><th>Oleh</th></tr>
-            </thead>
-            <tbody>
-                @forelse($pembelian as $p)
-                <tr>
-                    <td class="ps-3" style="font-size:13px">{{ $p->tanggal->format('d/m/Y') }}</td>
-                    <td style="font-size:13px;font-weight:500">{{ $p->produk->nama_produk }}</td>
-                    <td style="font-size:13px">{{ $p->supplier ?? '-' }}</td>
-                    <td style="font-size:13px">{{ number_format($p->jumlah) }}</td>
-                    <td style="font-size:13px">Rp {{ number_format($p->harga_beli,0,',','.') }}</td>
-                    <td style="font-size:13px;font-weight:600;color:#d97706">Rp {{ number_format($p->total,0,',','.') }}</td>
-                    <td style="font-size:12px;color:#6c757d">{{ $p->keterangan ?? '-' }}</td>
-                    <td style="font-size:12px;color:#6c757d">{{ $p->user->nama }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="8" class="text-center text-muted py-4">Belum ada catatan pembelian stok</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+
+@forelse($pembelian as $p)
+<div class="trx-card">
+    <div class="trx-row">
+        <div>
+            <div style="font-size:14px;font-weight:700;color:#3d2b1a">{{ $p->produk->nama_produk }}</div>
+            <div style="font-size:12px;color:#7a6152;margin-top:3px">
+                📦 +{{ $p->jumlah }} unit •
+                {{ $p->supplier ? '🏭 '.$p->supplier.' •' : '' }}
+                📅 {{ $p->tanggal?->format('d M Y') }}
+            </div>
+        </div>
+        <div style="text-align:right">
+            <div style="font-size:15px;font-weight:700;color:#d97706">Rp {{ number_format($p->total,0,',','.') }}</div>
+            <div style="font-size:11px;color:#9b8878">@ Rp {{ number_format($p->harga_beli,0,',','.') }}</div>
+        </div>
     </div>
-    @if($pembelian->hasPages())
-    <div class="card-footer bg-white">{{ $pembelian->links() }}</div>
+    @if($p->keterangan)
+    <div style="font-size:12px;color:#7a6152;margin-top:6px;padding-top:6px;border-top:1px solid #e8ddd5">
+        📝 {{ $p->keterangan }}
+    </div>
     @endif
+    <div style="font-size:11px;color:#9b8878;margin-top:6px">Dicatat: {{ $p->user->nama }}</div>
 </div>
+@empty
+<div style="text-align:center;padding:40px 0;color:#9b8878">
+    <div style="font-size:40px;margin-bottom:8px">📦</div>
+    <p>Belum ada pembelian stok</p>
+</div>
+@endforelse
+
+@if($pembelian->hasPages())
+<div style="margin-top:8px">{{ $pembelian->links() }}</div>
+@endif
+
+<button class="fab" onclick="window.location='{{ route('pembelian.create') }}'">+</button>
 @endsection
