@@ -26,7 +26,7 @@
                list="list-pelanggan">
         <datalist id="list-pelanggan">
             @foreach($pelanggan as $p)
-            <option value="{{ $p->nama_pelanggan }}">
+            <option value="{{ $p->nama_pelanggan }}" data-nohp="{{ $p->no_hp }}">
             @endforeach
         </datalist>
     </div>
@@ -197,5 +197,29 @@ document.getElementById('btn-tambah-item').onclick = function () {
 
 document.getElementById('ongkir').oninput = hitung;
 bindEvents();
+
+// Auto-fill phone when a pelanggan name from the datalist is chosen
+(function bindPelangganAutoFill(){
+    const namaInput = document.querySelector('input[name="nama_pelanggan"]');
+    const hpInput   = document.querySelector('input[name="no_hp"]');
+    const listOpts  = () => Array.from(document.querySelectorAll('#list-pelanggan option'));
+
+    function tryFill() {
+        const val = namaInput.value;
+        if (!val) return;
+        const matches = listOpts().filter(o => o.value === val);
+        if (matches.length === 1) {
+            hpInput.value = matches[0].dataset.nohp || '';
+        } else if (matches.length > 1) {
+            // Multiple customers share the same name — prefer first match.
+            // Could be enhanced to show choices; for now fill first.
+            hpInput.value = matches[0].dataset.nohp || '';
+        }
+    }
+
+    namaInput.addEventListener('input', tryFill);
+    // If page is reloaded with old input, attempt to fill immediately
+    if (namaInput.value) tryFill();
+})();
 </script>
 @endsection
